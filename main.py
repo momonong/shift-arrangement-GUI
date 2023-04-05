@@ -16,7 +16,7 @@ class Login(QDialog):
         # 使用者的帳號密碼在這
         user_name = self.user_name.text()
         password = self.password.text()
-        print(f'\nuser_name = {user_name} \npassword = {password}')
+        print(f'\nuser_name = {user_name} \npassword = {password}\n')
         menu = Menu()
         widget.addWidget(menu)
         widget.setCurrentIndex(widget.currentIndex()+1)
@@ -64,11 +64,16 @@ class Upload_person(QDialog):
                   "./")                 # start path
         print(filename, filetype)
         self.path_text.setText(filename)
-        # 上傳的個人班表在這
-        # csv_file_df 裡的 df 已經去除掉 header 
-        csv_file_df = read_csv(filename, header=None, skiprows=1)
-        print('\neach person shift:\n', csv_file_df)
-    
+        csv_file_df_each = read_csv('csv_files/person_shift/personal.csv', index_col='2023')
+        csv_file_df_all = read_csv('csv_files/_ALL_shift.csv', index_col='2023')
+        csv_file_df_each = csv_file_df_each[1:].fillna('')
+        csv_file_df_all = csv_file_df_all.fillna('')
+        csv_file_df_all = csv_file_df_all.append(csv_file_df_each)
+        csv_file_df_all.to_csv('csv_files/_ALL_shift.csv')
+        print('\neach person shift:\n', csv_file_df_each)
+        print('\nall people shift after merging:\n', csv_file_df_all)
+        
+
     def fun_show_text(self):
         # 天數統計與 fuzzy logic 所產生之建議放這裡
         day_cal_text = 'testing'
@@ -91,11 +96,13 @@ class Check_all_shift(QDialog):
     
     def fun_download_all(self):
         # 整理過後的所有人班表會在這個 csv 檔裡面
-        all_csv_file_df = read_csv('csv_files/ALL_shift.csv', header=None, skiprows=1)
+        all_csv_file_df = read_csv('csv_files/_ALL_shift.csv', header=None, skiprows=1)
+        all_csv_file_df = all_csv_file_df.fillna('')
         print('\nall people shift:\n', all_csv_file_df)
         all_csv_file_df.to_csv('csv_download/all_people_shift.csv')
         # 在連接到資料庫前，先用資料夾的方式進行
         csv_files_each_ls = listdir('csv_files/person_shift')
+        if '.DS_Store' in csv_files_each_ls : csv_files_each_ls.remove('.DS_Store')
         csv_files_each = ''
         for i in csv_files_each_ls:
             csv_files_each += i+'\n'
@@ -108,6 +115,7 @@ class Check_all_shift(QDialog):
         print(filename, filetype)
         # 可以從這裡挑選特定某個人的班表
         one_csv_file_df = read_csv(filename, header=None, skiprows=1)
+        one_csv_file_df = one_csv_file_df.fillna('')
         print('\nspecific person shift:\n', one_csv_file_df)
         one_csv_file_df.to_csv('csv_download/specific_person_shift.csv')
 
@@ -128,6 +136,7 @@ class Check_last_shift(QDialog):
     def fun_download_leave(self):
         # 排假過後的班表會存在這個 df 裡面
         leave_done_df = read_csv('csv_files/leave_done.csv', header=None, skiprows=1)
+        leave_done_df = leave_done_df.fillna('')
         print('\nafter leave arrangement shift:\n', leave_done_df)
         leave_done_df.to_csv('csv_download/after_leave_arrangement_shift.csv')
 
@@ -139,6 +148,7 @@ class Check_last_shift(QDialog):
         self.show_path_text.setText(filename)
         # 上傳的最後排班完成之班表在這
         last_done_df = read_csv(filename, header=None, skiprows=1)
+        last_done_df = last_done_df.fillna('')
         print('\nlast all done shift:\n', last_done_df)
 
     def fun_show_advice(self):
