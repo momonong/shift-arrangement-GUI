@@ -1,5 +1,5 @@
 import sys
-from pandas import read_csv, DataFrame
+from pandas import read_csv
 from os import listdir
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
@@ -93,6 +93,7 @@ class Check_all_shift(QDialog):
         # 整理過後的所有人班表會在這個 csv 檔裡面
         all_csv_file_df = read_csv('csv_files/ALL_shift.csv', header=None, skiprows=1)
         print('\nall people shift:\n', all_csv_file_df)
+        all_csv_file_df.to_csv('csv_download/all_people_shift.csv')
         # 在連接到資料庫前，先用資料夾的方式進行
         csv_files_each_ls = listdir('csv_files/person_shift')
         csv_files_each = ''
@@ -108,6 +109,7 @@ class Check_all_shift(QDialog):
         # 可以從這裡挑選特定某個人的班表
         one_csv_file_df = read_csv(filename, header=None, skiprows=1)
         print('\nspecific person shift:\n', one_csv_file_df)
+        one_csv_file_df.to_csv('csv_download/specific_person_shift.csv')
 
 class Check_last_shift(QDialog):
     def __init__(self):
@@ -127,6 +129,7 @@ class Check_last_shift(QDialog):
         # 排假過後的班表會存在這個 df 裡面
         leave_done_df = read_csv('csv_files/leave_done.csv', header=None, skiprows=1)
         print('\nafter leave arrangement shift:\n', leave_done_df)
+        leave_done_df.to_csv('csv_download/after_leave_arrangement_shift.csv')
 
     def fun_upload_last(self):
         filename, filetype = QFileDialog.getOpenFileName(self,
@@ -142,7 +145,6 @@ class Check_last_shift(QDialog):
         # 系統對於排班後之整份班表的回饋與建議 放這裡
         advise_text = 'testing'
         self.show_advice_text.setText(advise_text)
-
 
 app = QApplication(sys.argv)
 mainwindow = Login()
