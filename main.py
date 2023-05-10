@@ -5,6 +5,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.uic import loadUi
 
+# 先以字典方式代替資料庫
 personnel = {
     'Jonny': {'password': 'jonny', 'permission': 'boss'},
     'KUMA': {'password': 'kuma', 'permission': 'manager'},
