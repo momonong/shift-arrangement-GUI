@@ -5,6 +5,12 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.uic import loadUi
 
+personnel = {
+    'Jonny': {'password': 'jonny', 'permission': 'boss'},
+    'KUMA': {'password': 'kuma', 'permission': 'manager'},
+    'Morris': {'password': 'morris', 'permission': 'staff'}
+}
+
 class Login(QDialog):
     def __init__(self):
         super(Login, self).__init__()
@@ -12,13 +18,41 @@ class Login(QDialog):
         self.login_button.clicked.connect(self.fun_login)
         self.password.setEchoMode(QtWidgets.QLineEdit.Password)
 
+    def fun_login_check(self, user_name, password):
+        try:
+            if password==personnel[user_name]['password']:
+                print('\nLogin successfully.')
+                menu = Menu()
+                widget.addWidget(menu)
+                widget.setCurrentIndex(widget.currentIndex()+1)
+                print(f'''\nuser_name = {user_name} \npassword = {password} \npermission = {personnel[user_name]["permission"]}\n''')
+            else:
+                print('\nLogin failed.')
+                self.fun_login_fail()
+        except KeyError:
+            print('\nLogin failed.')
+            self.fun_login_fail()
+
+    def fun_login_fail(self):
+        login_fail = Login_fail()
+        widget.addWidget(login_fail)
+        widget.setCurrentIndex(widget.currentIndex()+1)
+
     def fun_login(self):
         # 使用者的帳號密碼在這
         user_name = self.user_name.text()
         password = self.password.text()
-        print(f'\nuser_name = {user_name} \npassword = {password}\n')
-        menu = Menu()
-        widget.addWidget(menu)
+        self.fun_login_check(user_name, password)
+
+class Login_fail(QDialog):
+    def __init__(self):
+        super(Login_fail, self).__init__()
+        loadUi('ui_files/login_fail.ui', self)
+        self.back_login_button.clicked.connect(self.fun_back)
+
+    def fun_back(self):        
+        login = Login()
+        widget.addWidget(login)
         widget.setCurrentIndex(widget.currentIndex()+1)
 
 class Menu(QDialog):
