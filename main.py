@@ -56,8 +56,14 @@ class Menu(QDialog):
         super(Menu, self).__init__()
         loadUi('ui_files/menu.ui', self)
         self.first_fun_btn.clicked.connect(self.fun_first)
+        if personnel[user_name]['permission'] not in filter_by_permission['lowest_level']:
+            self.first_fun_btn.setEnable(False)
         self.sec_fun_btn.clicked.connect(self.fun_second)
+        if personnel[user_name]['permission'] not in filter_by_permission['medium_level']: 
+            self.sec_fun_btn.setEnabled(False)
         self.third_fun_btn.clicked.connect(self.fun_third)
+        if personnel[user_name]['permission'] not in filter_by_permission['highest_level']:
+            self.third_fun_btn.setEnabled(False)
 
     def fun_first(self):
         upload_person = Upload_person()
@@ -65,36 +71,14 @@ class Menu(QDialog):
         widget.setCurrentIndex(widget.currentIndex()+1)
 
     def fun_second(self):
-        if personnel[user_name]['permission'] not in filter_by_permission['medium_level']:
-            self.fun_permission_denied()
-        else:        
-            check_all_shift = Check_all_shift()
-            widget.addWidget(check_all_shift)
-            widget.setCurrentIndex(widget.currentIndex()+1)
+        check_all_shift = Check_all_shift()
+        widget.addWidget(check_all_shift)
+        widget.setCurrentIndex(widget.currentIndex()+1)
 
     def fun_third(self):
-        if personnel[user_name]['permission'] not in filter_by_permission['highest_level']:
-            self.fun_permission_denied()
-        else:
-            check_last_shift = Check_last_shift()
-            widget.addWidget(check_last_shift)
-            widget.setCurrentIndex(widget.currentIndex()+1)
-
-    def fun_permission_denied(self):
-        permission_denied = Permission_denied()
-        widget.addWidget(permission_denied)
-        widget.setCurrentIndex(widget.currentIndex()+1)            
-    
-class Permission_denied(QDialog):
-    def __init__(self):
-        super(Permission_denied, self).__init__()
-        loadUi('ui_files/permission_denied.ui', self)
-        self.back_menu_button.clicked.connect(self.fun_back)
-
-    def fun_back(self):
-        menu = Menu()
-        widget.addWidget(menu)
-        widget.setCurrentIndex(widget.currentIndex()+1)
+        check_last_shift = Check_last_shift()
+        widget.addWidget(check_last_shift)
+        widget.setCurrentIndex(widget.currentIndex()+1)          
 
 class Upload_person(QDialog):
     def __init__(self):
@@ -116,21 +100,38 @@ class Upload_person(QDialog):
                   "./")                 # start path
         print(filename, filetype)
         self.path_text.setText(filename)
-        csv_file_df_each = read_csv('csv_files/person_shift/personal.csv', index_col='2023')
+        csv_file_df_each = read_csv(filename, index_col='2023')
+        ######################################
+        #  這裡 call 檢查排班是否正確的 funcion  
+        #  這邊先預設排班正確 return True          
+        shift_verified = True
+        ######################################
         csv_file_df_all = read_csv('csv_files/_ALL_shift.csv', index_col='2023')
         csv_file_df_each = csv_file_df_each[1:].fillna('')
         csv_file_df_all = csv_file_df_all.fillna('')
         csv_file_df_all = csv_file_df_all.append(csv_file_df_each)
         csv_file_df_all.to_csv('csv_files/_ALL_shift.csv')
-        print('\neach person shift:\n', csv_file_df_each)
-        print('\nall people shift after merging:\n', csv_file_df_all)  
+        #print('\neach person shift:\n', csv_file_df_each)
+        #print('\nall people shift after merging:\n', csv_file_df_all)  
 
     def fun_show_text(self):
+        # 計算特休天數
+        self.fun_calculate_vacation()
         # 天數統計與 fuzzy logic 所產生之建議放這裡
-        day_cal_text = 'testing'
-        advise_text = 'testing'
+        day_cal_text = f'剩下的特休天數：{personnel[user_name]["vacation_days"]}' 
+        advise_text = f'目前班表之'
         self.days_cal_text.setText(day_cal_text)
         self.advise_text.setText(advise_text)
+    
+    def fun_calculate_vacation(self):
+        vacation_days = personnel[user_name]['vacation_days']
+        ######################################
+        #  這裡 call 計算修了幾天特休的 funcion  
+        #  這邊先簡單假設排了兩天特休          
+        vacation_days -= 2
+        ######################################
+        personnel[user_name]['vacation_days'] = vacation_days
+        print(f'vacation days: {vacation_days} \npersonnel data: {personnel[user_name]["vacation_days"]}\n')
 
 class Check_all_shift(QDialog):
     def __init__(self):
