@@ -84,9 +84,11 @@ class Upload_person(QDialog):
     def __init__(self):
         super(Upload_person, self).__init__()
         loadUi('ui_files/upload_person.ui', self)
-        self.upload_person_btn.clicked.connect(self.fun_upload_person)
-        self.text_btn.clicked.connect(self.fun_show_text)
+        self.filename = None
+        self.upload_person_btn.clicked.connect(self.fun_check_personal_shift)
         # show 天數統計與 fuzzy logic 所產生之建議 的按鈕
+        self.text_btn.clicked.connect(self.fun_show_text)
+        self.text_btn_2.clicked.connect(self.fun_confirm_update_shift)
         self.back_btn.clicked.connect(self.fun_back)
 
     def fun_back(self):
@@ -94,36 +96,42 @@ class Upload_person(QDialog):
         widget.addWidget(menu)
         widget.setCurrentIndex(widget.currentIndex()+1)
     
-    def fun_upload_person(self):
-        filename, filetype = QFileDialog.getOpenFileName(self,
+    def fun_check_personal_shift(self):
+        self.filename, filetype = QFileDialog.getOpenFileName(self,
                   "Open file",
                   "./")                 # start path
-        print(filename, filetype)
-        self.path_text.setText(filename)
-        csv_file_df_each = read_csv(filename, index_col='2023')
+        print(self.filename, filetype)
+        self.path_text.setText(self.filename)
+        csv_to_check = read_csv(self.filename, index_col='2023')
         ######################################
         #  這裡 call 檢查排班是否正確的 funcion  
         #  這邊先預設排班正確 return True          
         shift_verified = True
         ######################################
-        csv_file_df_all = read_csv('csv_files/_ALL_shift.csv', index_col='2023')
-        csv_file_df_each = csv_file_df_each[1:].fillna('')
-        csv_file_df_all = csv_file_df_all.fillna('')
-        csv_file_df_all = csv_file_df_all.append(csv_file_df_each)
-        csv_file_df_all.to_csv('csv_files/_ALL_shift.csv')
-        #print('\neach person shift:\n', csv_file_df_each)
-        #print('\nall people shift after merging:\n', csv_file_df_all)  
+        if shift_verified:
+            self.days_cal_text.setText('排班符合規定，確定檔案正確後即可按下「天數統計與建議」按鍵，讓系統檢視、評分')
+            self.advise_text.setText('排班符合規定，確定檔案正確後即可按下「天數統計與建議」按鍵，讓系統檢視、評分')
+        else:
+            self.days_cal_text.setText('排班不符合規定，請調整後再上傳！')
+            self.advise_text.setText('排班不符合規定，請調整後再上傳！')
 
     def fun_show_text(self):
         # 計算特休天數
-        self.fun_calculate_vacation()
+        self.fun_update_vacation_days()
+        ######################################
+        #  這裡 call 計算班表 score 的 funcion  
+        #  以及 call 生成班表建議的 function
+        #  這邊先簡單定義
+        score = 100
+        advise = 'good'
+        ######################################
         # 天數統計與 fuzzy logic 所產生之建議放這裡
-        day_cal_text = f'剩下的特休天數：{personnel[user_name]["vacation_days"]}' 
-        advise_text = f'目前班表之'
+        day_cal_text = f'剩下的特休天數：{personnel[user_name]["vacation_days"]} \n\n確認後即可按下「確定上傳」按鍵' 
+        advise_text = f'目前班表之分數為分數: {score} \n系統對班表建議: {advise} \n\n確認後即可按下「確定上傳」按鍵'
         self.days_cal_text.setText(day_cal_text)
         self.advise_text.setText(advise_text)
     
-    def fun_calculate_vacation(self):
+    def fun_update_vacation_days(self):
         vacation_days = personnel[user_name]['vacation_days']
         ######################################
         #  這裡 call 計算修了幾天特休的 funcion  
@@ -132,6 +140,16 @@ class Upload_person(QDialog):
         ######################################
         personnel[user_name]['vacation_days'] = vacation_days
         print(f'vacation days: {vacation_days} \npersonnel data: {personnel[user_name]["vacation_days"]}\n')
+    
+    def fun_confirm_update_shift(self):
+        csv_file_df_each = read_csv(self.filename, index_col='2023')
+        csv_file_df_all = read_csv('csv_files/_ALL_shift.csv', index_col='2023')
+        csv_file_df_each = csv_file_df_each[1:].fillna('')
+        csv_file_df_all = csv_file_df_all.fillna('')
+        csv_file_df_all = csv_file_df_all.append(csv_file_df_each)
+        csv_file_df_all.to_csv('csv_files/_ALL_shift.csv')
+        print('\neach person shift:\n', csv_file_df_each)
+        print('\nall people shift after merging:\n', csv_file_df_all)
 
 class Check_all_shift(QDialog):
     def __init__(self):
