@@ -4,13 +4,7 @@ from os import listdir
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.uic import loadUi
-
-# 先以字典方式代替資料庫
-personnel = {
-    'Jonny': {'password': 'jonny', 'permission': 'boss'},
-    'KUMA': {'password': 'kuma', 'permission': 'manager'},
-    'Morris': {'password': 'morris', 'permission': 'staff'}
-}
+from personnel_data import personnel, filter_by_permission
 
 class Login(QDialog):
     def __init__(self):
@@ -26,7 +20,7 @@ class Login(QDialog):
                 menu = Menu()
                 widget.addWidget(menu)
                 widget.setCurrentIndex(widget.currentIndex()+1)
-                print(f'''\nuser_name = {user_name} \npassword = {password} \npermission = {personnel[user_name]["permission"]}\n''')
+                print(f'\nuser_name = {user_name} \npassword = {password} \npermission = {personnel[user_name]["permission"]}\n')
             else:
                 print('\nLogin failed.')
                 self.fun_login_fail()
@@ -41,6 +35,7 @@ class Login(QDialog):
 
     def fun_login(self):
         # 使用者的帳號密碼在這
+        global user_name 
         user_name = self.user_name.text()
         password = self.password.text()
         self.fun_login_check(user_name, password)
@@ -70,15 +65,37 @@ class Menu(QDialog):
         widget.setCurrentIndex(widget.currentIndex()+1)
 
     def fun_second(self):
-        check_all_shift = Check_all_shift()
-        widget.addWidget(check_all_shift)
-        widget.setCurrentIndex(widget.currentIndex()+1)
+        if personnel[user_name]['permission'] not in filter_by_permission['medium_level']:
+            self.fun_permission_denied()
+        else:        
+            check_all_shift = Check_all_shift()
+            widget.addWidget(check_all_shift)
+            widget.setCurrentIndex(widget.currentIndex()+1)
 
     def fun_third(self):
-        check_last_shift = Check_last_shift()
-        widget.addWidget(check_last_shift)
-        widget.setCurrentIndex(widget.currentIndex()+1)         
-        
+        if personnel[user_name]['permission'] not in filter_by_permission['highest_level']:
+            self.fun_permission_denied()
+        else:
+            check_last_shift = Check_last_shift()
+            widget.addWidget(check_last_shift)
+            widget.setCurrentIndex(widget.currentIndex()+1)
+
+    def fun_permission_denied(self):
+        permission_denied = Permission_denied()
+        widget.addWidget(permission_denied)
+        widget.setCurrentIndex(widget.currentIndex()+1)            
+    
+class Permission_denied(QDialog):
+    def __init__(self):
+        super(Permission_denied, self).__init__()
+        loadUi('ui_files/permission_denied.ui', self)
+        self.back_menu_button.clicked.connect(self.fun_back)
+
+    def fun_back(self):
+        menu = Menu()
+        widget.addWidget(menu)
+        widget.setCurrentIndex(widget.currentIndex()+1)
+
 class Upload_person(QDialog):
     def __init__(self):
         super(Upload_person, self).__init__()
@@ -106,8 +123,7 @@ class Upload_person(QDialog):
         csv_file_df_all = csv_file_df_all.append(csv_file_df_each)
         csv_file_df_all.to_csv('csv_files/_ALL_shift.csv')
         print('\neach person shift:\n', csv_file_df_each)
-        print('\nall people shift after merging:\n', csv_file_df_all)
-        
+        print('\nall people shift after merging:\n', csv_file_df_all)  
 
     def fun_show_text(self):
         # 天數統計與 fuzzy logic 所產生之建議放這裡
@@ -128,7 +144,7 @@ class Check_all_shift(QDialog):
         menu = Menu()
         widget.addWidget(menu)
         widget.setCurrentIndex(widget.currentIndex()+1)
-    
+     
     def fun_download_all(self):
         # 整理過後的所有人班表會在這個 csv 檔裡面
         all_csv_file_df = read_csv('csv_files/_ALL_shift.csv', header=None, skiprows=1)
