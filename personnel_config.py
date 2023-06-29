@@ -28,12 +28,12 @@ personnel = {
 
     'KUMA': {
         'password': 'kuma', 
-        'permission': position[1],
+        'position': position[1],
         'vacation_days': vacation_days},
 
     'Morris': {
         'password': 'morris', 
-        'permission': position[2],
+        'position': position[2],
         'vacation_days': vacation_days},
 }
 # 以字典方式紀錄不同功能的權限

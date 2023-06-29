@@ -20,12 +20,13 @@ class Login(QDialog):
                 menu = Menu()
                 widget.addWidget(menu)
                 widget.setCurrentIndex(widget.currentIndex()+1)
-                print(f'\nuser_name = {user_name} \npassword = {password} \npermission = {personnel[user_name]["permission"]}\n')
+                print(f'\nuser_name = {user_name} \npassword = {password} \npermission = {personnel[user_name]["position"]}\n')
             else:
                 print('\nLogin failed.')
                 self.fun_login_fail()
         except KeyError as e:
-            print('\nLogin failed.' + e)
+            print('\nLogin failed.')
+            print(e)
             self.fun_login_fail()
 
     def fun_login_fail(self):
@@ -56,13 +57,13 @@ class Menu(QDialog):
         super(Menu, self).__init__()
         loadUi('ui_files/menu.ui', self)
         self.first_fun_btn.clicked.connect(self.fun_first)
-        if personnel[user_name]['permission'] not in filter_by_permission['lowest_level']:
+        if personnel[user_name]['position'] not in filter_by_permission['lowest_level']:
             self.first_fun_btn.setEnable(False)
         self.sec_fun_btn.clicked.connect(self.fun_second)
-        if personnel[user_name]['permission'] not in filter_by_permission['medium_level']: 
+        if personnel[user_name]['position'] not in filter_by_permission['medium_level']: 
             self.sec_fun_btn.setEnabled(False)
         self.third_fun_btn.clicked.connect(self.fun_third)
-        if personnel[user_name]['permission'] not in filter_by_permission['highest_level']:
+        if personnel[user_name]['position'] not in filter_by_permission['highest_level']:
             self.third_fun_btn.setEnabled(False)
 
     def fun_first(self):
@@ -97,23 +98,27 @@ class Upload_person(QDialog):
         widget.setCurrentIndex(widget.currentIndex()+1)
     
     def fun_check_personal_shift(self):
-        self.filename, filetype = QFileDialog.getOpenFileName(self,
-                  "Open file",
-                  "./")                 # start path
-        print(self.filename, filetype)
-        self.path_text.setText(self.filename)
-        csv_to_check = read_csv(self.filename, index_col='2023')
-        ######################################
-        #  這裡 call 檢查排班是否正確的 funcion  
-        #  這邊先預設排班正確 return True          
-        shift_verified = True
-        ######################################
-        if shift_verified:
-            self.days_cal_text.setText('排班符合規定，確定檔案正確後即可按下「天數統計與建議」按鍵，讓系統檢視、評分')
-            self.advise_text.setText('排班符合規定，確定檔案正確後即可按下「天數統計與建議」按鍵，讓系統檢視、評分')
-        else:
-            self.days_cal_text.setText('排班不符合規定，請調整後再上傳！')
-            self.advise_text.setText('排班不符合規定，請調整後再上傳！')
+        try:
+            self.filename, filetype = QFileDialog.getOpenFileName(self,
+                    "Open file",
+                    "./")                 # start path
+            print(self.filename, filetype)
+            self.path_text.setText(self.filename)
+            csv_to_check = read_csv(self.filename, index_col='2023')
+            ######################################
+            #  這裡 call 檢查排班是否正確的 funcion  
+            #  這邊先預設排班正確 return True          
+            is_shift_verified = True
+            ######################################
+            if is_shift_verified:
+                self.days_cal_text.setText('排班符合規定，確定檔案正確後即可按下「天數統計與建議」按鍵，讓系統檢視、評分')
+                self.advise_text.setText('排班符合規定，確定檔案正確後即可按下「天數統計與建議」按鍵，讓系統檢視、評分')
+            else:
+                self.days_cal_text.setText('排班不符合規定，請調整後再上傳！')
+                self.advise_text.setText('排班不符合規定，請調整後再上傳！')
+        except FileNotFoundError as e:
+            print('Cancel uploading.')
+            print(e)
 
     def fun_show_text(self):
         # 計算特休天數
