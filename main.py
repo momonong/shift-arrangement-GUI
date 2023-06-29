@@ -1,8 +1,11 @@
 import sys
+import os
+import shutil
 from pandas import read_csv
 from os import listdir
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
+from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog, QMessageBox
+from PyQt5.QtCore import QFile, QStandardPaths
 from PyQt5.uic import loadUi
 from personnel_config import personnel, filter_by_permission
 
@@ -173,8 +176,27 @@ class Check_all_shift(QDialog):
         # 整理過後的所有人班表會在這個 csv 檔裡面
         all_csv_file_df = read_csv('csv_files/_ALL_shift.csv', header=None, skiprows=1)
         all_csv_file_df = all_csv_file_df.fillna('')
-        print('\nall people shift:\n', all_csv_file_df)
-        all_csv_file_df.to_csv('csv_download/all_people_shift.csv')
+        #print('\nall people shift:\n', all_csv_file_df)
+        ToDel_folder_path = 'csv_download/all_people_shift.csv'
+        all_csv_file_df.to_csv(ToDel_folder_path)
+        file = QFile(ToDel_folder_path)
+        # 判斷檔案是否存在並可讀
+        if file.exists() and file.open(QFile.ReadOnly):
+            # 設定下載位置在使用者的預設下載位置
+            download_path = QStandardPaths.writableLocation(QStandardPaths.DownloadLocation)
+            # 將檔案複製到下載位置
+            # 使用shutil進行檔案複製
+            if shutil.copy(ToDel_folder_path, download_path):
+                QMessageBox.information(self, "下載完成", "檔案下載完成！")
+                #print(f'\n{shutil.copy(ToDel_folder_path, download_path)}\n')
+            else:
+                QMessageBox.warning(self, "錯誤", "檔案下載失敗！")
+                #print(f'\n{shutil.copy(ToDel_folder_path, download_path)}\n')
+            file.close()
+            os.remove(ToDel_folder_path)
+        else:
+            QMessageBox.warning(self, "錯誤", "檔案不存在或無法讀取！")
+            print(f'\n{download_path}\n{file.copy(download_path)}\n')
         # 在連接到資料庫前，先用資料夾的方式進行
         csv_files_each_ls = listdir('csv_files/person_shift')
         if '.DS_Store' in csv_files_each_ls : csv_files_each_ls.remove('.DS_Store')
@@ -191,8 +213,28 @@ class Check_all_shift(QDialog):
         # 可以從這裡挑選特定某個人的班表
         one_csv_file_df = read_csv(filename, header=None, skiprows=1)
         one_csv_file_df = one_csv_file_df.fillna('')
-        print('\nspecific person shift:\n', one_csv_file_df)
-        one_csv_file_df.to_csv('csv_download/specific_person_shift.csv')
+        # print('\nspecific person shift:\n', one_csv_file_df)
+        # 將 df 存成 csv 後下載到預設下載路徑，下載完成後刪除
+        ToDel_folder_path = 'csv_download/specific_person_shift.csv'
+        one_csv_file_df.to_csv(ToDel_folder_path)
+        file = QFile(ToDel_folder_path)
+        # 判斷檔案是否存在並可讀
+        if file.exists() and file.open(QFile.ReadOnly):
+            # 設定下載位置在使用者的預設下載位置
+            download_path = QStandardPaths.writableLocation(QStandardPaths.DownloadLocation)
+            # 將檔案複製到下載位置
+            # 使用shutil進行檔案複製
+            if shutil.copy(ToDel_folder_path, download_path):
+                QMessageBox.information(self, "下載完成", "檔案下載完成！")
+                #print(f'\n{shutil.copy(ToDel_folder_path, download_path)}\n')
+            else:
+                QMessageBox.warning(self, "錯誤", "檔案下載失敗！")
+                #print(f'\n{shutil.copy(ToDel_folder_path, download_path)}\n')
+            file.close()
+            os.remove(ToDel_folder_path)
+        else:
+            QMessageBox.warning(self, "錯誤", "檔案不存在或無法讀取！")
+            print(f'\n{download_path}\n{file.copy(download_path)}\n')
 
 class Check_last_shift(QDialog):
     def __init__(self):
@@ -212,8 +254,27 @@ class Check_last_shift(QDialog):
         # 排假過後的班表會存在這個 df 裡面
         leave_done_df = read_csv('csv_files/leave_done.csv', header=None, skiprows=1)
         leave_done_df = leave_done_df.fillna('')
-        print('\nafter leave arrangement shift:\n', leave_done_df)
-        leave_done_df.to_csv('csv_download/after_leave_arrangement_shift.csv')
+        #print('\nafter leave arrangement shift:\n', leave_done_df)
+        ToDel_folder_path = 'csv_download/after_leave_arrangement_shift.csv'
+        leave_done_df.to_csv(ToDel_folder_path)
+        file = QFile(ToDel_folder_path)
+        # 判斷檔案是否存在並可讀
+        if file.exists() and file.open(QFile.ReadOnly):
+            # 設定下載位置在使用者的預設下載位置
+            download_path = QStandardPaths.writableLocation(QStandardPaths.DownloadLocation)
+            # 將檔案複製到下載位置
+            # 使用shutil進行檔案複製
+            if shutil.copy(ToDel_folder_path, download_path):
+                QMessageBox.information(self, "下載完成", "檔案下載完成！")
+                #print(f'\n{shutil.copy(ToDel_folder_path, download_path)}\n')
+            else:
+                QMessageBox.warning(self, "錯誤", "檔案下載失敗！")
+                #print(f'\n{shutil.copy(ToDel_folder_path, download_path)}\n')
+            file.close()
+            os.remove(ToDel_folder_path)
+        else:
+            QMessageBox.warning(self, "錯誤", "檔案不存在或無法讀取！")
+            print(f'\n{download_path}\n{file.copy(download_path)}\n')
 
     def fun_upload_last(self):
         filename, filetype = QFileDialog.getOpenFileName(self,
