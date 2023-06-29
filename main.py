@@ -4,7 +4,7 @@ from os import listdir
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QDialog, QApplication, QFileDialog
 from PyQt5.uic import loadUi
-from personnel_data import personnel, filter_by_permission
+from personnel_config import personnel, filter_by_permission
 
 class Login(QDialog):
     def __init__(self):
@@ -24,8 +24,8 @@ class Login(QDialog):
             else:
                 print('\nLogin failed.')
                 self.fun_login_fail()
-        except KeyError:
-            print('\nLogin failed.')
+        except KeyError as e:
+            print('\nLogin failed.' + e)
             self.fun_login_fail()
 
     def fun_login_fail(self):
